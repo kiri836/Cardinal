@@ -1,0 +1,4 @@
+Premium members:
+Access to the lumin command outside the solus server
+Custom lumin profile
+Custom generatable embed to use on steam or elsewhere(updates every time the command is run by the user)
