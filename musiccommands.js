@@ -198,7 +198,7 @@ async function listenerSkipper(audioPlayerInfo, client){
 				audioPlayerInfo.PLAYER.play(await streamCreator(audioPlayerInfo.QUEUE[0].VIDEOID));
 				audioPlayerInfo.CURRENT = audioPlayerInfo.QUEUE[0];
 				audioPlayerInfo.QUEUE.shift();
-				await embedSelector(current, false);
+				await embedSelector(audioPlayerInfo.CURRENT, false);
 				return client.channels.cache.get(audioPlayerInfo.INTERACTION.channelId).send({ embeds: [embedObject] });
 			} else {
 				audioPlayerInfo.TIMER = setTimeout(leave, 300000, audioPlayerInfo);
