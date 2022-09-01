@@ -28,8 +28,8 @@ async function mainPlayer(interaction, connection, name, client){
 	await interaction.deferReply();
 	url = interaction.options.getString('song');
 	if (url){
-		if (url.includes('&list')){url = url.slice(url.indexOf('&list'), url.length);}
 		res = await betterytsr.runSample(url);
+		console.log(res);
 		if (res === false){
 			await currentVideoInfo(res, true);
 		} else {
@@ -41,10 +41,8 @@ async function mainPlayer(interaction, connection, name, client){
 			}
 			
 		}
-		
 	}
-	
-	if (playerObjList.length != 0){
+	if (playerObjList.findIndex(x => x.GUILDID === interaction.guildId) != -1){
 		indexOfObjs = playerObjList.findIndex(x => x.GUILDID === interaction.guildId);
 		switch(name){
 			case ('play'):
@@ -136,6 +134,20 @@ async function mainPlayer(interaction, connection, name, client){
 				interaction.editReply('Left.')
 				playerObjList[indexOfObjs].CONNECTION.destroy();
 				break;
+			case ('shuffle'):
+				if (playerObjList[indexOfObjs].QUEUE.length > 1){
+					for (let i = playerObjList[indexOfObjs].QUEUE.length -1; i > 0; i--) {
+						let j = Math.floor(Math.random() * i)
+						let k = playerObjList[indexOfObjs].QUEUE[i]
+						playerObjList[indexOfObjs].QUEUE[i] = playerObjList[indexOfObjs].QUEUE[j]
+						playerObjList[indexOfObjs].QUEUE[j] = k
+					}
+					interaction.editReply('Shuffled.')
+				} else {
+					interaction.editReply('There is nothing to shuffle.')
+				}
+				
+				break;
 			//case ('loopqueue'):
 			//	if (playerObjList[indexOfObjs].LOOPINGQUEUE === true){
 			//		playerObjList[indexOfObjs].LOOPINGQUEUE = false;
@@ -222,7 +234,8 @@ async function listenerSkipper(audioPlayerInfo, client){
 }
 // creates the stream that is then played by a player object
 async function streamCreator(videoURL){
-	stream = createAudioResource(ytdl(videoURL, { 
+	console.log(ytdl.validateURL(videoURL));
+	stream = createAudioResource(await ytdl(videoURL, { 
 		filter: "audioonly",
 	    fmt: "mp3",
 	    highWaterMark: 1 << 62,

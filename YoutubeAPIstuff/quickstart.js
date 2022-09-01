@@ -43,33 +43,27 @@ async function runPlaylist(searchterm) {
   
 }
 
-// a very simple example of searching for youtube videos
 async function runSample(searchterm) {
-  if (searchterm.includes('list=')){
-    if (searchterm.includes('&index')){
-      var playlistID = searchterm.substr(searchterm.indexOf('list=') + 5, (searchterm.indexOf('&index') - searchterm.indexOf('list=') - 5));
-      return await runPlaylist(playlistID);
-    } else{
-      var playlistID = searchterm.substr(searchterm.indexOf('list=') + 5);
-      return await runPlaylist(playlistID);
-    }
-    if (runPlaylist(playlistID) === false){
-      return actualPlaylist;
+  if (searchterm.includes('&list=LM')){ searchterm = searchterm.substring(0, searchterm.indexOf('&list=LM')); } //plays the song from the likes playlist even though it isnt available
+  if (searchterm.includes('&list=')){               // checks to see if this is a playlist link
+    if (!searchterm.includes('music.youtube.com')){ // checks to see if the link is from music.youtube.com, because the link could be different youtube.com
+        if (!searchterm.includes('&index')){        // checks to see if this is a song in the playlist
+          var playlistID = searchterm.substr(searchterm.indexOf('&list=') + 6); // gets the playlist link
+          return await runPlaylist(playlistID);
+        } else {
+          searchterm = searchterm.substr(0, searchterm.indexOf('&list=')); // gets the song link
+          return videoSearch(searchterm);
+        }
+      } else if (searchterm.includes('?list=')){
+    var playlistID = searchterm.substr(searchterm.indexOf('?list=') + 6); // gets the playlist link
+    return await runPlaylist(playlistID);
+    } else {
+      searchterm = searchterm.substr(0, searchterm.indexOf('&list='));
+      return videoSearch(searchterm);
     }
   } else {
-    const res = await youtube.search.list({
-      part: 'id',
-      type: 'video',
-      safeSearch: 'strict',
-      maxResults: 1,
-      q: searchterm,
-    });
-    if (res.data.pageInfo.totalResults === 0){
-      return false;
-    } else {
-      const actualPlaylist = new playlistThing(await videoInfo(res.data.items[0].id.videoId), false);
-      return actualPlaylist;
-    }
+    if (searchterm.includes('&t=')){ searchterm = searchterm.substring(0, searchterm.indexOf('&t=')); }
+    return videoSearch(searchterm);
   }
 }
 
@@ -83,9 +77,23 @@ async function videoInfo(searchterm) {
   return res;
 }
 
-//if (module === require.main) {
-  //runSample().catch(console.error);
-//}
+async function videoSearch(searchterm) {
+  const res = await youtube.search.list({
+      part: 'id',
+      type: 'video',
+      safeSearch: 'moderate',
+      maxResults: 1,
+      q: searchterm,
+    });
+  console.log(res.data.items);
+  if (res.data.pageInfo.totalResults === 0){
+    return false;
+  } else {
+    const actualPlaylist = new playlistThing(await videoInfo(res.data.items[0].id.videoId), false);
+    return actualPlaylist;
+  }
+  return res;
+}
 
 async function playlistDev(searchterm, token){
   const res = await youtube.playlistItems.list({

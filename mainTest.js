@@ -66,7 +66,7 @@ client.on('interactionCreate', async interaction => {
       Join(interaction);
       audioHandler.mainPlayer(interaction, connection, fileReference.name, client);
     }
-    else if (fileReference.name === 'pause' || fileReference.name === 'queue' || fileReference.name === 'resume' || fileReference.name === 'skip' || fileReference.name === 'loop' || fileReference.name === 'stop' || fileReference.name === 'leave') {
+    else if (fileReference.name === 'pause' || fileReference.name === 'queue' || fileReference.name === 'resume' || fileReference.name === 'skip' || fileReference.name === 'loop' || fileReference.name === 'stop' || fileReference.name === 'leave' || fileReference.name === 'shuffle') {
       audioHandler.mainPlayer(interaction, connection, fileReference.name, client);
     }
     else if (fileReference.name === 'bugs'){
@@ -85,6 +85,6 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-(async () => { try { await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands },);} catch (error) {console.error(error);}})();
+(async () => { try { await rest.put(Routes.applicationCommands(clientId), { body: commands },);} catch (error) {console.error(error);}})();
 
 client.login(token);

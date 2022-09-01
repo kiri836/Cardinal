@@ -1,0 +1,222 @@
+```
+node:events:498
+      throw er; // Unhandled 'error' event
+      ^
+
+evalmachine.<anonymous>:13
+-1929233002,b,/,][};Xka(ncode);
+              ^
+
+SyntaxError: Invalid regular expression: missing /
+    at new Script (node:vm:100:7)
+    at Object.exports.decipherFormats (C:\Users\user\Documents\bot rewrite\node_modules\ytdl-core\lib\sig.js:116:51)
+    at runMicrotasks (<anonymous>)
+    at processTicksAndRejections (node:internal/process/task_queues:96:5)
+    at async Promise.all (index 0)
+    at async exports.getInfo (C:\Users\user\Documents\bot rewrite\node_modules\ytdl-core\lib\info.js:401:17)
+Emitted 'error' event on B instance at:
+    at OggDemuxer.t (C:\Users\user\Documents\bot rewrite\node_modules\@discordjs\voice\dist\index.js:8:288)
+    at Object.onceWrapper (node:events:640:26)
+    at OggDemuxer.emit (node:events:532:35)
+    at emitErrorNT (node:internal/streams/destroy:157:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:122:3)
+    at processTicksAndRejections (node:internal/process/task_queues:83:21) {
+  resource: <ref *3> T {
+    playStream: OggDemuxer {
+      _readableState: ReadableState {
+        objectMode: true,
+        highWaterMark: 16,
+        buffer: BufferList { head: null, tail: null, length: 0 },
+        length: 0,
+        pipes: [],
+        flowing: false,
+        ended: false,
+        endEmitted: false,
+        reading: true,
+        constructed: true,
+        sync: false,
+        needReadable: true,
+        emittedReadable: false,
+        readableListening: true,
+        resumeScheduled: false,
+        errorEmitted: true,
+        emitClose: true,
+        autoDestroy: true,
+        destroyed: true,
+        errored: evalmachine.<anonymous>:13
+        -1929233002,b,/,][};Xka(ncode);
+                      ^
+
+        SyntaxError: Invalid regular expression: missing /
+            at new Script (node:vm:100:7)
+            at Object.exports.decipherFormats (C:\Users\user\Documents\bot rewrite\node_modules\ytdl-core\lib\sig.js:116:51)
+            at runMicrotasks (<anonymous>)
+            at processTicksAndRejections (node:internal/process/task_queues:96:5)
+            at async Promise.all (index 0)
+            at async exports.getInfo (C:\Users\user\Documents\bot rewrite\node_modules\ytdl-core\lib\info.js:401:17),
+        closed: true,
+        closeEmitted: false,
+        defaultEncoding: 'utf8',
+        awaitDrainWriters: null,
+        multiAwaitDrain: false,
+        readingMore: false,
+        dataEmitted: false,
+        decoder: null,
+        encoding: null,
+        [Symbol(kPaused)]: null
+      },
+      _events: [Object: null prototype] {
+        prefinish: [Function: prefinish],
+        close: [
+          [Function (anonymous)],
+          [Function: onclose],
+          [Function: bound onceWrapper] { listener: [Function: s] }
+        ],
+        end: [
+          [Function: onend],
+          [Function: bound onceWrapper] { listener: [Function: s] }
+        ],
+        finish: [
+          [Function: onfinish],
+          [Function: bound onceWrapper] { listener: [Function: s] }
+        ],
+        error: [Function: onerror],
+        readable: [
+          [Function: bound onceWrapper] {
+            listener: [Function (anonymous)]
+          },
+          [Function: bound onceWrapper] { listener: [Function: o] }
+        ]
+      },
+      _eventsCount: 6,
+      _maxListeners: undefined,
+      _writableState: WritableState {
+        objectMode: false,
+        highWaterMark: 16384,
+        finalCalled: false,
+        needDrain: false,
+        ending: false,
+        ended: false,
+        finished: false,
+        destroyed: true,
+        decodeStrings: true,
+        defaultEncoding: 'utf8',
+        length: 0,
+        writing: false,
+        corked: 0,
+        sync: true,
+        bufferProcessing: false,
+        onwrite: [Function: bound onwrite],
+        writecb: null,
+        writelen: 0,
+        afterWriteTickInfo: null,
+        buffered: [],
+        bufferedIndex: 0,
+        allBuffers: true,
+        allNoop: true,
+        pendingcb: 0,
+        constructed: true,
+        prefinished: false,
+        errorEmitted: true,
+        emitClose: true,
+        autoDestroy: true,
+        errored: evalmachine.<anonymous>:13
+        -1929233002,b,/,][};Xka(ncode);
+                      ^
+
+        SyntaxError: Invalid regular expression: missing /
+            at new Script (node:vm:100:7)
+            at Object.exports.decipherFormats (C:\Users\user\Documents\bot rewrite\node_modules\ytdl-core\lib\sig.js:116:51)
+            at runMicrotasks (<anonymous>)
+            at processTicksAndRejections (node:internal/process/task_queues:96:5)
+            at async Promise.all (index 0)
+            at async exports.getInfo (C:\Users\user\Documents\bot rewrite\node_modules\ytdl-core\lib\info.js:401:17),
+        closed: true,
+        closeEmitted: false,
+        [Symbol(kOnFinished)]: []
+      },
+      allowHalfOpen: true,
+      _remainder: null,
+      _head: null,
+      _bitstream: null,
+      [Symbol(kCapture)]: false,
+      [Symbol(kCallback)]: null
+    },
+    edges: [
+      <ref *1> {
+        type: 'ffmpeg ogg',
+        to: _e {
+          edges: [ [Object], [Object], [Object] ],
+          type: 'ogg/opus'
+        },
+        cost: 2,
+        transformer: [Function: transformer],
+        from: _e { edges: [ [Object], [Circular *1] ], type: 'arbitrary' }
+      },
+      <ref *2> {
+        type: 'ogg/opus demuxer',
+        to: _e { edges: [ [Object] ], type: 'opus' },
+        cost: 1,
+        transformer: [Function: transformer],
+        from: _e {
+          edges: [ [Circular *2], [Object], [Object] ],
+          type: 'ogg/opus'
+        }
+      }
+    ],
+    metadata: null,
+    volume: undefined,
+    encoder: undefined,
+    audioPlayer: <ref *4> B {
+      _events: [Object: null prototype] { stateChange: [Function (anonymous)] },
+      _eventsCount: 1,
+      _maxListeners: undefined,
+      _state: {
+        status: 'buffering',
+        resource: [Circular *3],
+        onReadableCallback: [Function: o],
+        onFailureCallback: [Function: s],
+        onStreamError: [Function: t]
+      },
+      subscribers: [
+        O {
+          connection: G {
+            _events: [Object: null prototype],
+            _eventsCount: 1,
+            _maxListeners: undefined,
+            rejoinAttempts: 0,
+            _state: [Object],
+            joinConfig: [Object],
+            packets: [Object],
+            receiver: [j],
+            debug: null,
+            onNetworkingClose: [Function: bound onNetworkingClose],
+            onNetworkingStateChange: [Function: bound onNetworkingStateChange],
+            onNetworkingError: [Function: bound onNetworkingError],
+            onNetworkingDebug: [Function: bound onNetworkingDebug],
+            [Symbol(kCapture)]: false
+          },
+          player: [Circular *4]
+        }
+      ],
+      behaviors: { noSubscriber: 'pause', maxMissedFrames: 5 },
+      debug: [Function (anonymous)],
+      [Symbol(kCapture)]: false
+    },
+    playbackDuration: 0,
+    started: false,
+    silencePaddingFrames: 5,
+    silenceRemaining: -1
+  }
+}
+```
+Explanation:
+For my bot I utilize the Youtube API to find the songs that I want to play. I then get the video id and supply it into `https://www.youtube.com/watch?v=${res.data.items[0].id}` to have it in queue.
+ 
+Since the Youtube API can handle music.youtube.com links I wanted to try them out.
+
+Here is a youtube music link to the song Linkin Park - In the End: https://music.youtube.com/watch?v=BLZWkjBXfN8
+
+This link is passed into the youtube api to then get the video id, which would be: BLZWkjBXfN8. Then put into the url: https://www.youtube.com/watch?v=BLZWkjBXfN8
+
+This creates a viable youtube.com link (not a _music_.youtube.com link), but even though this is a viable link you cannot find that exact video through youtube but only through youtube music. Since ytdl-core only searches though youtube (I am assuming) it creates the above error.
