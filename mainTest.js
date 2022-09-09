@@ -72,8 +72,8 @@ client.on('interactionCreate', async interaction => {
     else if (fileReference.name === 'bugs'){
       interaction.reply({ embeds: [bugs.exampleEmbed] });
     } 
-    else if (fileReference.name === 'bug') {
-      interaction.reply('This command is still in development!');
+    else if (fileReference.name === 'support') {
+      interaction.reply('https://www.patreon.com/Kiri836');
     } 
     else {
       console.log('an error occured!');
