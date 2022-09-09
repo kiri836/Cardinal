@@ -76,7 +76,7 @@ client.on('interactionCreate', async interaction => {
       interaction.reply('https://www.patreon.com/Kiri836');
     } 
     else if (fileReference.name === 'help'){
-      interaction.reply(help.helpembed);
+      interaction.reply({ embeds: [help.exampleEmbed] });
     }
     else {
       console.log('an error occured!');
