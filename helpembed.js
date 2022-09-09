@@ -3,6 +3,8 @@ const ytdl = require('ytdl-core');
 const moment = require('moment');
 const { format } = require('moment-duration-format');
 
+const name = "help";
+
 async function helpEmbed() {
 	const exampleEmbed = new MessageEmbed()
 		.setColor('#ffffff')
@@ -23,5 +25,5 @@ async function helpEmbed() {
 }
 
 module.exports = {
-	helpEmbed
+	helpEmbed, name
 }
