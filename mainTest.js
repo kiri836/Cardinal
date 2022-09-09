@@ -16,7 +16,7 @@ const { NoSubscriberBehavior,
   VoiceConnectionStatus,
   joinVoiceChannel, } = require('@discordjs/voice');
 const audioHandler = require('./musiccommands.js');
-
+const help = require('./helpembed.js');
 const bugs = require('./bugslist.js');
 
 const rest = new REST({ version: '9' }).setToken(token);
@@ -75,6 +75,9 @@ client.on('interactionCreate', async interaction => {
     else if (fileReference.name === 'support') {
       interaction.reply('https://www.patreon.com/Kiri836');
     } 
+    else if (fileReference.name === 'help'){
+      interaction.reply(help.helpembed);
+    }
     else {
       console.log('an error occured!');
       return;
