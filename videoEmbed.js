@@ -3,6 +3,8 @@ const ytdl = require('ytdl-core');
 const moment = require('moment');
 const { format } = require('moment-duration-format');
 
+// this file contains all the currently used embeds
+
 async function playingQueueingEmbed(current, embedType) {
 	var date = new Date(current.UPLOADDATE);
 	const exampleEmbed = new MessageEmbed()

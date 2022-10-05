@@ -8,8 +8,8 @@ const { NoSubscriberBehavior,
   joinVoiceChannel, } = require('@discordjs/voice');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const fs = require('fs');
-const ytdl = require('ytdl-core');
-const mainEmbed = require('./videoEmbed.js');
+const ytdl = require('ytdl-core'); // used for validating the validity of a supplied url
+const mainEmbed = require('./videoEmbed.js'); // embeds are all located in this file
 
 const betterytsr = require('./YoutubeAPIstuff/quickstart.js'); // this uses the youtube api directly instead of using the method ytsr is currently using, this speeds up the searching and makes it easier to modify for future use
 
@@ -20,19 +20,20 @@ var stream; 				// the newly created stream that will then be played by the play
 var queue = [];				// empty array used to suppliment the QUEUE property of a audioPlayerInfo class object, on creation
 var res;					// temporary variable that is used to create a new audioPlayerInfo class object
 var embedObject;			// varaible for the embed generated using the basic info
-var somethingElse;
-var indexOfObjs;
-var current;
+var indexOfObjs;			// variable for the position of the guild specific player in the array
+var current;				// variable for holding video data temporarily
 
 async function mainPlayer(interaction, connection, name, client){
-	await interaction.deferReply();
-	url = interaction.options.getString('song');
+	await interaction.deferReply(); 				// without differing the reply, the bot has to reply within 5 seconds, which might not be enough time for certain commands, this sets the limit to 15 minutes giving more than adecuate time for the bot to reply
+	// retrieves the string supplied by the user and checks it for a usable url
+	url = interaction.options.getString('song');    
 	if (url){
-		res = await betterytsr.runSample(url);
+		res = await betterytsr.runSample(url); 		// searches youtube for the url, the url can be a specific video or a public playlist
 		console.log(res);
 		if (res === false){
-			await currentVideoInfo(res, true);
+			await currentVideoInfo(res, true);		// fills the current variable with actual data about the video
 		} else {
+			// checks if the supplied data is a playlist and if so moves the first video in the current variable
 			if (res.IFPLAYLIST === false){
 				await currentVideoInfo(res.PLAYLIST, false);
 			} else if (res.IFPLAYLIST === true){
@@ -42,15 +43,17 @@ async function mainPlayer(interaction, connection, name, client){
 			
 		}
 	}
-	if (playerObjList.findIndex(x => x.GUILDID === interaction.guildId) != -1){
-		indexOfObjs = playerObjList.findIndex(x => x.GUILDID === interaction.guildId);
+	if (playerObjList.findIndex(x => x.GUILDID === interaction.guildId) != -1){			// searches if the a guild specific player has been created, if not then it will be created at the else statement below
+		indexOfObjs = playerObjList.findIndex(x => x.GUILDID === interaction.guildId);	// gets the position of the guild specific player in the array
+		// checks for which command was submitted, and runs the required code for that command
 		switch(name){
 			case ('play'):
 				if (current.FILLED != 0){
 					playerObjList[indexOfObjs].CONNECTION = connection;
 					if (ytdl.validateURL(current.VIDEOID) == true){
+						// checks if the players if the player is currently playing, if it is the video is added to queue, otherwise the player will begin playing the video
 						if (playerObjList[indexOfObjs].PLAYER._state.status === 'idle' || playerObjList[indexOfObjs].PLAYER._state.status === 'autopaused'){
-							playerObjList[indexOfObjs].PLAYER.play(await streamCreator(current.VIDEOID), false);
+							playerObjList[indexOfObjs].PLAYER.play(await streamCreator(current.VIDEOID), false); // the streamCreator function is located at the bottom of this file and creates the stream for the video to be played
 							playerObjList[indexOfObjs].CONNECTION.subscribe(playerObjList[indexOfObjs].PLAYER);
 							playerObjList[indexOfObjs].CURRENT = current;
 							playerObjList[indexOfObjs].INTERACTION = interaction;
@@ -148,6 +151,7 @@ async function mainPlayer(interaction, connection, name, client){
 				}
 				
 				break;
+			// implementation of loopqueue would be difficult and i don't see a reason to add it now because only a small percentage of people will ever use this
 			//case ('loopqueue'):
 			//	if (playerObjList[indexOfObjs].LOOPINGQUEUE === true){
 			//		playerObjList[indexOfObjs].LOOPINGQUEUE = false;
@@ -158,6 +162,7 @@ async function mainPlayer(interaction, connection, name, client){
 			//	}
 			//	break;
 		}
+	// here a guild specific player is created if it was not found before in the array, it is then added to the array after creation
 	} else {
 		if (name === 'play'){
 			const player = createAudioPlayer({
@@ -197,11 +202,11 @@ async function mainPlayer(interaction, connection, name, client){
 		return;
 	}
 }
-// a skip function for skipping once a song ends
+// moves on to the next video once the one playing ends
 async function listenerSkipper(audioPlayerInfo, client){
-	if (audioPlayerInfo.STOPPING === true){return audioPlayerInfo.STOPPING = false;}
-	if (audioPlayerInfo.NEEDSAREPLY === false){
-		if (audioPlayerInfo.LOOPING === true){
+	if (audioPlayerInfo.STOPPING === true){return audioPlayerInfo.STOPPING = false;} // stops the function from running if the stop command was run
+	if (audioPlayerInfo.NEEDSAREPLY === false){ 									// this needs to be checked for because there is a difference between simply sending a message from the bot and replying to a users command, example: the bot attempts to reply to no one with an embed because the bot skipped itself 
+		if (audioPlayerInfo.LOOPING === true){ 										// checks if looping, no need to move on to the next song if the bot is set to loop the current one
 			audioPlayerInfo.PLAYER.play(await streamCreator(audioPlayerInfo.CURRENT.VIDEOID));
 			await embedSelector(audioPlayerInfo.CURRENT, false);
 			return client.channels.cache.get(audioPlayerInfo.INTERACTION.channelId).send({ embeds: [embedObject] });
@@ -234,22 +239,21 @@ async function listenerSkipper(audioPlayerInfo, client){
 }
 // creates the stream that is then played by a player object
 async function streamCreator(videoURL){
-	console.log(ytdl.validateURL(videoURL));
 	stream = createAudioResource(await ytdl(videoURL, { 
 		filter: "audioonly",
 	    fmt: "mp3",
 	    highWaterMark: 1 << 62,
 	    liveBuffer: 1 << 62,
-	    dlChunkSize: 0, //disabling chunking is recommended in discord bot
+	    dlChunkSize: 0, //disabling chunking is recommended in a discord bot
 	    bitrate: 128 }));
 	return stream;
 }
-
+// embeds are used for the ui of the bot, this only exists to make the code easier to read
 async function embedSelector(current, embedType){
 	embedObject = await mainEmbed.playingQueueingEmbed(current, embedType);
 	return embedObject;
 }
-
+// updates the current variable with actual data, this contains all the video info to be displayed on the embed
 async function currentVideoInfo(res, sheesh){
 	if (sheesh === false){
 		current = new currentVideo(
@@ -286,7 +290,7 @@ async function leave(audioPlayerInfo){
 	audioPlayerInfo.CURRENT = "0033";
 	audioPlayerInfo.CONNECTION.destroy();
 }
-// this class holds all information needed for the player, this is primarily for multi-guild usage
+// this class object is used for managing multiple guilds using the bot 
 class audioPlayerInfo{
 	constructor(GUILDID, CONNECTION, PLAYER, QUEUE, CURRENT, LOOPING, INTERACTION, STOPPING, NEEDSAREPLY, TIMER, STREAM){
 		this.GUILDID = GUILDID;
@@ -304,6 +308,7 @@ class audioPlayerInfo{
 	}
 }
 
+// this class object is used to hold all of the data for the current video
 class currentVideo{
 	constructor(TITLE, VIDEOID, AUTHOR, AUTHORID, IMAGEURL, LIKES, VIEWS, LENGTH, UPLOADDATE, FILLED){
 		this.TITLE = TITLE;

@@ -7,7 +7,7 @@ const youtube = google.youtube({
   version: 'v3',
   auth: 'AIzaSyD_iQERUapSJHP-si1SdhtwIYP-bcuzfU0'
 });
-
+// finds the playlists and how long it is, this will only run once it is known that the url is a playlist
 async function runPlaylist(searchterm) {
 
   const res = await youtube.playlists.list({
@@ -18,6 +18,7 @@ async function runPlaylist(searchterm) {
   if (res.data.pageInfo.totalResults === 0){
     return false;
   } else {
+    // checks for the length of playlist and decides on the amount of times the nextpagetoken will be needed
     if (res.data.pageInfo.totalResults > 50){
       if ((res.data.pageInfo.totalResults % 50) > 0){
         var loopCount = (res.data.pageInfo.totalResults / 50) + 1;
@@ -42,12 +43,12 @@ async function runPlaylist(searchterm) {
   }
   
 }
-
+// this handles checking for specific edge cases of submitted youtube playlist urls
 async function runSample(searchterm) {
   if (searchterm.includes('&list=LM')){ searchterm = searchterm.substring(0, searchterm.indexOf('&list=LM')); } //plays the song from the likes playlist even though it isnt available
-  if (searchterm.includes('&list=')){               // checks to see if this is a playlist link
-    if (!searchterm.includes('music.youtube.com')){ // checks to see if the link is from music.youtube.com, because the link could be different youtube.com
-        if (!searchterm.includes('&index')){        // checks to see if this is a song in the playlist
+  if (searchterm.includes('&list=')){                                            // checks to see if this is a playlist link
+    if (!searchterm.includes('music.youtube.com')){                              // checks to see if the link is from music.youtube.com, because the link could be different youtube.com
+        if (!searchterm.includes('&index')){                                     // checks to see if this is a song in the playlist
           var playlistID = searchterm.substr(searchterm.indexOf('&list=') + 6); // gets the playlist link
           return await runPlaylist(playlistID);
         } else {
@@ -66,7 +67,7 @@ async function runSample(searchterm) {
     return videoSearch(searchterm);
   }
 }
-
+// retrieves the needed video data
 async function videoInfo(searchterm) {
 
   const res = await youtube.videos.list({
@@ -76,7 +77,7 @@ async function videoInfo(searchterm) {
 
   return res;
 }
-
+// searches for the specific video with the youtube api
 async function videoSearch(searchterm) {
   const res = await youtube.search.list({
       part: 'id',
@@ -94,7 +95,7 @@ async function videoSearch(searchterm) {
   }
   return res;
 }
-
+// creates the complete playlist, each array variable contains video data
 async function playlistDev(searchterm, token){
   const res = await youtube.playlistItems.list({
       part: 'contentDetails',
@@ -120,20 +121,20 @@ async function playlistDev(searchterm, token){
       playlist.push(current);
       i++;
     }
-    return res.nextPageToken;
+    return res.nextPageToken; // the youtube api can only output 50 videos max on one call, and the next page token is needed if you have a longer than 50 videos playlist and need the rest
 }
 
 module.exports = {
   runSample
 }
-
+// simple object for holding a variable and playlist identifier
 class playlistThing{
   constructor(PLAYLIST, IFPLAYLIST){
     this.PLAYLIST = PLAYLIST;
     this.IFPLAYLIST = IFPLAYLIST
   }
 }
-
+// similar to the class that is present in the musiccommands.js file, object for handling video data
 class currentVideo{
   constructor(TITLE, VIDEOID, AUTHOR, AUTHORID, IMAGEURL, LIKES, VIEWS, LENGTH, UPLOADDATE, FILLED){
     this.TITLE = TITLE;
