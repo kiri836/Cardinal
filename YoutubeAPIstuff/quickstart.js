@@ -5,7 +5,7 @@ var token = "";
 // initialize the Youtube API library
 const youtube = google.youtube({
   version: 'v3',
-  auth: 'AIzaSyD_iQERUapSJHP-si1SdhtwIYP-bcuzfU0'
+  auth: 'athorizationID'
 });
 // finds the playlists and how long it is, this will only run once it is known that the url is a playlist
 async function runPlaylist(searchterm) {
