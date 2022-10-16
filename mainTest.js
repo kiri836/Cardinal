@@ -5,8 +5,8 @@ const fs = require('node:fs');
 const { Client } = require('discord.js');
 const commands = [];
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-const clientId = '517202141383884810';
-const guildId = '379341801984884737';
+const clientId = '<clientID>';
+const guildId = '<guildID>';
 const { NoSubscriberBehavior,
   StreamType,
   createAudioPlayer,
