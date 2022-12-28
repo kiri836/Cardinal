@@ -239,7 +239,7 @@ async function listenerSkipper(audioPlayerInfo, client){
 }
 // creates the stream that is then played by a player object
 async function streamCreator(videoURL){
-	stream = createAudioResource(await ytdl(videoURL, { 
+	stream = createAudioResource(await ytdl(videoURL + "&bpctr=9999999999&has_verified=1", { 
 		filter: "audioonly",
 	    fmt: "mp3",
 	    highWaterMark: 1 << 62,

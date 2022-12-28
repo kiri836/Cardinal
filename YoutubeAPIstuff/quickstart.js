@@ -82,7 +82,7 @@ async function videoSearch(searchterm) {
   const res = await youtube.search.list({
       part: 'id',
       type: 'video',
-      safeSearch: 'strict',
+      safeSearch: 'none',
       maxResults: 1,
       q: searchterm,
     });
