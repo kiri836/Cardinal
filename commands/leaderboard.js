@@ -1,10 +1,10 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
-var name = 'join';
+var name = 'leaderboard';
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('join')
-		.setDescription('Makes the bot join the voice chat'),
+		.setName('leaderboard')
+		.setDescription('Shows the leaderboard.'),
 	name
-};
+}

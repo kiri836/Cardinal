@@ -1,4 +1,4 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const ytdl = require('ytdl-core');
 const moment = require('moment');
 const { format } = require('moment-duration-format');
@@ -7,57 +7,24 @@ const { format } = require('moment-duration-format');
 
 async function playingQueueingEmbed(current, embedType) {
 	var date = new Date(current.UPLOADDATE);
-	const exampleEmbed = new MessageEmbed()
+	const exampleEmbed = new EmbedBuilder()
 		.setColor('#ffffff')
 		.setTitle(current.TITLE)
 		.setURL(current.VIDEOID)
-		.setAuthor('Currently playing:')
+		.setAuthor({name: 'Currently playing:'})
 		.setDescription(`[ ${current.AUTHOR} ](${current.AUTHORID})` + '\n\n**Views: **' + `[ ${parseInt(current.VIEWS).toLocaleString()} ]`
 			+ '\n**Likes: **' + `[ ${parseInt(current.LIKES).toLocaleString()} ]`  + '\n**Length: **' + `[ ${moment.duration(current.LENGTH).format('HH:mm:ss', {trim: false})} ]`
 			+ '\n**Upload Date: **' + `[ ${date.toLocaleString()} ]`)
-		//.addFields(
-		//	{ name: '\u200B', value: '**Views: **' + parseInt(current.videoDetails.viewCount).toLocaleString()},
-		//	{ name: '\u200B', value: '**Likes: **' + current.videoDetails.likes.toLocaleString()},
-		//	{ name: '\u200B', value: '**Length: **' + date},
-		//	{ name: '\u200B', value: '**Upload Date: **' + current.videoDetails.uploadDate},
-		//	{ name: '\u200B', value: '**Views: **' + parseInt(current.videoDetails.viewCount).toLocaleString()
-		//	+ '\n**Likes: **' + current.videoDetails.likes.toLocaleString()  + '\n**Length: **' + date
-		//	+ '\n**Upload Date: **' + current.videoDetails.uploadDate },
-		//)
 		.setImage(current.IMAGEURL)
 		.setTimestamp();
 	if (embedType === true){
-		exampleEmbed.setAuthor('Added: ');
+		exampleEmbed.setAuthor({ name: 'Added: ' });
 	}
 	return exampleEmbed;
 }
 
-/*async function addedToQueueEmbed(current){
-	if (current.videoDetails.lengthSeconds > 3600){
-		date = new Date(current.videoDetails.lengthSeconds * 1000).toISOString().substring(11, 16);
-	} else {
-		date = new Date(current.videoDetails.lengthSeconds * 1000).toISOString().substring(14, 19)
-	}
-	const exampleEmbed = new MessageEmbed()
-		.setColor('#ffffff')
-		.setTitlemainQueue.QUEUEent.TITLE)
-		.setURLmainQueue.QUEUEent.VIDEOID)
-		.setAuthor('Added:')
-		.setDescription(`[$mainQueue.QUEUEent.AUTHOR}]($mainQueue.QUEUEent.AUTHORID})`)
-		.addFields(
-			{ name: '\u200B', value: '**Views: **' + parseInt(current.videoDetails.viewCount).toLocaleString()},
-			{ name: '\u200B', value: '**Likes: **' + current.videoDetails.likes.toLocaleString()},
-			{ name: '\u200B', value: '**Length: **' + date},
-			{ name: '\u200B', value: '**Upload Date: **' + current.videoDetails.uploadDate},
-		)
-		.setImage(current.videoDetails.thumbnails[current.videoDetails.thumbnails.length - 1].url)
-		.setTimestamp()
-		.setFooter({ text: 'Some footer text here' });
-	return exampleEmbed;
-}*/
-
 async function songQueueEmbed(mainQueue){
-	const exampleEmbed = new MessageEmbed()
+	const exampleEmbed = new EmbedBuilder()
 		.setColor('#ffffff')
 		.setTitle('**Queue: **')
 		.setDescription('Currently playing: \n' + `[${mainQueue.CURRENT.TITLE}](${mainQueue.CURRENT.VIDEOID}) **---** [${mainQueue.CURRENT.AUTHOR}](${mainQueue.CURRENT.AUTHORID})`)
@@ -66,7 +33,7 @@ async function songQueueEmbed(mainQueue){
 		case 0:
 			break;
 		case 1:
-			exampleEmbed.addField('\u200B', '**1. **' + `[${mainQueue.QUEUE[0].TITLE}](${mainQueue.QUEUE[0].VIDEOID}) **---** [${mainQueue.QUEUE[0].AUTHOR}](${mainQueue.QUEUE[0].AUTHORID})`);
+			exampleEmbed.addFields({ name: '\u200B', value: '**1. **' + `[${mainQueue.QUEUE[0].TITLE}](${mainQueue.QUEUE[0].VIDEOID}) **---** [${mainQueue.QUEUE[0].AUTHOR}](${mainQueue.QUEUE[0].AUTHORID})`});
 			break;
 		case 2:
 			exampleEmbed.addFields(

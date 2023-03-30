@@ -10,8 +10,14 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const fs = require('fs');
 const ytdl = require('ytdl-core'); // used for validating the validity of a supplied url
 const mainEmbed = require('./videoEmbed.js'); // embeds are all located in this file
+const buttons = require('./ui/buttons.js');
+const Events = require ('discord.js');
 
+
+const authorization = require("../Config.js");
 const betterytsr = require('./YoutubeAPIstuff/quickstart.js'); // this uses the youtube api directly instead of using the method ytsr is currently using, this speeds up the searching and makes it easier to modify for future use
+const COOKIE = authorization.cookies;
+const ID_TOKEN = authorization.idtoken;
 
 var playerObjList = []; 	// array that contains all playing objects
 var url; 					// the search term used to search for videos
@@ -26,21 +32,22 @@ var current;				// variable for holding video data temporarily
 async function mainPlayer(interaction, connection, name, client){
 	await interaction.deferReply(); 				// without differing the reply, the bot has to reply within 5 seconds, which might not be enough time for certain commands, this sets the limit to 15 minutes giving more than adecuate time for the bot to reply
 	// retrieves the string supplied by the user and checks it for a usable url
-	url = interaction.options.getString('song');    
-	if (url){
-		res = await betterytsr.runSample(url); 		// searches youtube for the url, the url can be a specific video or a public playlist
-		console.log(res);
-		if (res === false){
-			await currentVideoInfo(res, true);		// fills the current variable with actual data about the video
-		} else {
-			// checks if the supplied data is a playlist and if so moves the first video in the current variable
-			if (res.IFPLAYLIST === false){
-				await currentVideoInfo(res.PLAYLIST, false);
-			} else if (res.IFPLAYLIST === true){
-				current = res.PLAYLIST[0];
-				res.PLAYLIST.shift();
+	if (interaction.type == 2){
+			url = interaction.options.getString('song');    
+		if (url){
+			res = await betterytsr.runSample(url); 		// searches youtube for the url, the url can be a specific video or a public playlist
+			if (res === false){
+				await currentVideoInfo(res, true);		// fills the current variable with actual data about the video
+			} else {
+				// checks if the supplied data is a playlist and if so moves the first video in the current variable
+				if (res.IFPLAYLIST === false){
+					await currentVideoInfo(res.PLAYLIST, false);
+				} else if (res.IFPLAYLIST === true){
+					current = res.PLAYLIST[0];
+					res.PLAYLIST.shift();
+				}
+				
 			}
-			
 		}
 	}
 	if (playerObjList.findIndex(x => x.GUILDID === interaction.guildId) != -1){			// searches if the a guild specific player has been created, if not then it will be created at the else statement below
@@ -62,7 +69,7 @@ async function mainPlayer(interaction, connection, name, client){
 								playerObjList[indexOfObjs].QUEUE = res.PLAYLIST;
 							}
 							await embedSelector(playerObjList[indexOfObjs].CURRENT, false);
-							return interaction.editReply({ embeds: [embedObject] });
+							return interaction.editReply({ embeds: [embedObject], components: [buttons.sppq] });
 						} else {
 							playerObjList[indexOfObjs].QUEUE.push(current);
 							if (res.IFPLAYLIST === true){
@@ -93,6 +100,7 @@ async function mainPlayer(interaction, connection, name, client){
 				playerObjList[indexOfObjs].NEEDSAREPLY = true;
 				playerObjList[indexOfObjs].INTERACTION = interaction;
 				playerObjList[indexOfObjs].PLAYER.stop();
+				playerObjList[indexOfObjs].CURRENT = "0033";
 				break;
 			case ('pause'):
 				playerObjList[indexOfObjs].INTERACTION = interaction;
@@ -151,27 +159,17 @@ async function mainPlayer(interaction, connection, name, client){
 				}
 				
 				break;
-			// implementation of loopqueue would be difficult and i don't see a reason to add it now because only a small percentage of people will ever use this
-			//case ('loopqueue'):
-			//	if (playerObjList[indexOfObjs].LOOPINGQUEUE === true){
-			//		playerObjList[indexOfObjs].LOOPINGQUEUE = false;
-			//		return interaction.editReply('Stopped looping queue.');
-			//	} else {
-			//		playerObjList[indexOfObjs].LOOPINGQUEUE = true;
-			//		return interaction.editReply('Started looping queue.');
-			//	}
-			//	break;
 		}
 	// here a guild specific player is created if it was not found before in the array, it is then added to the array after creation
 	} else {
 		if (name === 'play'){
 			const player = createAudioPlayer({
 				behaviors: {
-					noSubscriber: NoSubscriberBehavior.Pause,
+					noSubscriber: NoSubscriberBehavior.Stop,
 				},
 			});
 
-			// creates the listener on the player object
+			// creates the listener on the player object to detect when the audio source has finished playing
 			player.addListener("stateChange", (oldOne, newOne) => {
     			if (newOne.status == "idle") {
     			indexOfObjs = playerObjList.findIndex(x => x.GUILDID === connection.joinConfig.guildId);
@@ -195,7 +193,7 @@ async function mainPlayer(interaction, connection, name, client){
 
 			playerObjList.push(new audioPlayerInfo(interaction.guildId, connection, player, queue, current, false, interaction, false, false, 0, stream));
 			await embedSelector(current, false);
-			return interaction.editReply({ embeds: [embedObject] });
+			return interaction.editReply({ embeds: [embedObject], components: [buttons.sppq] });
 		} else {
 			return interaction.editReply('I am not currently in a voice currently channel. Use /play to play something first.');
 		}
@@ -209,14 +207,14 @@ async function listenerSkipper(audioPlayerInfo, client){
 		if (audioPlayerInfo.LOOPING === true){ 										// checks if looping, no need to move on to the next song if the bot is set to loop the current one
 			audioPlayerInfo.PLAYER.play(await streamCreator(audioPlayerInfo.CURRENT.VIDEOID));
 			await embedSelector(audioPlayerInfo.CURRENT, false);
-			return client.channels.cache.get(audioPlayerInfo.INTERACTION.channelId).send({ embeds: [embedObject] });
+			/*return client.channels.cache.get(audioPlayerInfo.INTERACTION.channelId).send({ embeds: [embedObject] });*/
 		} else {
 			if (audioPlayerInfo.QUEUE.length != 0){
 				audioPlayerInfo.PLAYER.play(await streamCreator(audioPlayerInfo.QUEUE[0].VIDEOID));
 				audioPlayerInfo.CURRENT = audioPlayerInfo.QUEUE[0];
 				audioPlayerInfo.QUEUE.shift();
 				await embedSelector(audioPlayerInfo.CURRENT, false);
-				return client.channels.cache.get(audioPlayerInfo.INTERACTION.channelId).send({ embeds: [embedObject] });
+				return client.channels.cache.get(audioPlayerInfo.INTERACTION.channelId).send({ embeds: [embedObject], components: [buttons.sppq]});
 			} else {
 				audioPlayerInfo.TIMER = setTimeout(leave, 300000, audioPlayerInfo);
 				return client.channels.cache.get(audioPlayerInfo.INTERACTION.channelId).send("There is nothing else left in queue.");
@@ -224,12 +222,13 @@ async function listenerSkipper(audioPlayerInfo, client){
 		}			
 	} else {
 		if (audioPlayerInfo.QUEUE.length != 0){
+			console.log("this");
 			audioPlayerInfo.PLAYER.play(await streamCreator(audioPlayerInfo.QUEUE[0].VIDEOID));
 			audioPlayerInfo.CURRENT = audioPlayerInfo.QUEUE[0];
 			audioPlayerInfo.QUEUE.shift();
 			audioPlayerInfo.NEEDSAREPLY = false;
 			await embedSelector(audioPlayerInfo.CURRENT, false);
-			return audioPlayerInfo.INTERACTION.editReply({ embeds: [embedObject] });
+			return audioPlayerInfo.INTERACTION.editReply({ embeds: [embedObject], components: [buttons.sppq] });
 		} else {
 			audioPlayerInfo.NEEDSAREPLY = false;
 			audioPlayerInfo.TIMER = setTimeout(leave, 300000, audioPlayerInfo);
@@ -239,13 +238,19 @@ async function listenerSkipper(audioPlayerInfo, client){
 }
 // creates the stream that is then played by a player object
 async function streamCreator(videoURL){
-	stream = createAudioResource(await ytdl(videoURL + "&bpctr=9999999999&has_verified=1", { 
-		filter: "audioonly",
-	    fmt: "mp3",
-	    highWaterMark: 1 << 62,
-	    liveBuffer: 1 << 62,
-	    dlChunkSize: 0, //disabling chunking is recommended in a discord bot
-	    bitrate: 128 }));
+	try {
+		stream = createAudioResource(await ytdl(videoURL, { 
+			filter: "audioonly",
+		    fmt: "mp3",
+		    highWaterMark: 1 << 62,
+		    liveBuffer: 1 << 62,
+		    dlChunkSize: 0,
+		    bitrate: 128,
+		    }));
+	} catch (error) {
+		console.error(error);
+	} 
+	
 	return stream;
 }
 // embeds are used for the ui of the bot, this only exists to make the code easier to read
@@ -304,7 +309,6 @@ class audioPlayerInfo{
 		this.NEEDSAREPLY = NEEDSAREPLY;
 		this.TIMER = TIMER;
 		this.STREAM = STREAM;
-		//this.LOOPINGQUEUE = LOOPINGQUEUE;
 	}
 }
 

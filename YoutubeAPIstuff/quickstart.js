@@ -1,11 +1,12 @@
 const {google} = require('googleapis');
 const path = require('path');
+const authorization = require("../../Config.js");
 var playlist = [];
 var token = "";
 // initialize the Youtube API library
 const youtube = google.youtube({
   version: 'v3',
-  auth: '<authorizationID>'
+  auth: authorization.auth
 });
 // finds the playlists and how long it is, this will only run once it is known that the url is a playlist
 async function runPlaylist(searchterm) {
@@ -82,11 +83,10 @@ async function videoSearch(searchterm) {
   const res = await youtube.search.list({
       part: 'id',
       type: 'video',
-      safeSearch: 'none',
+      safeSearch: 'strict',
       maxResults: 1,
       q: searchterm,
     });
-  console.log(res.data.items);
   if (res.data.pageInfo.totalResults === 0){
     return false;
   } else {

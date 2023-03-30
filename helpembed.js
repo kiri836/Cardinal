@@ -1,8 +1,8 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 const moment = require('moment');
 const { format } = require('moment-duration-format');
 
-const exampleEmbed = new MessageEmbed()
+const exampleEmbed = new EmbedBuilder()
 	.setColor('#ffffff')
 	.setTitle('All Commands:')
 	.setDescription(`/play - search for a video with the title or url from YouTube, supports YouTube playlists up to 250 songs

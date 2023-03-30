@@ -1,12 +1,12 @@
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-const { token } = require('./config.json');
+const authorization = require("../Config.js");
+const token = authorization.token;
 const fs = require('node:fs');
-const { Client } = require('discord.js');
+const { Client, Events, GatewayIntentBits, Partials } = require('discord.js');
 const commands = [];
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
-const clientId = '<clientID>';
-const guildId = '<guildID>';
+const commandFiles = fs.readdirSync('../commands').filter(file => file.endsWith('.js'));
+const clientId = authorization.clientID;
 const { NoSubscriberBehavior,
   StreamType,
   createAudioPlayer,
@@ -18,10 +18,13 @@ const { NoSubscriberBehavior,
 const audioHandler = require('./musiccommands.js');
 const help = require('./helpembed.js');
 const bugs = require('./bugslist.js');
+const database = require('./Database and points/sqldatabase.js');
+// const guildId = "954904615357390939";
 
 const rest = new REST({ version: '9' }).setToken(token);
-const client = new Client({ intents: ['GUILDS', 'GUILD_VOICE_STATES', 'GUILD_MEMBERS', 'GUILD_MESSAGES'] });
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages], partials: [Partials.Channel] });
 var connection;
+
 
 // adds all the separate command files into one data array
 for (const file of commandFiles) {
@@ -48,6 +51,18 @@ async function Join(interaction) {
     // Seems to be a real disconnect which SHOULDN'T be recovered from
   }
   });
+  connection.on('stateChange', (oldState, newState) => {
+    const oldNetworking = Reflect.get(oldState, 'networking');
+    const newNetworking = Reflect.get(newState, 'networking');
+
+    const networkStateChangeHandler = (oldNetworkState, newNetworkState) => {
+      const newUdp = Reflect.get(newNetworkState, 'udp');
+      clearInterval(newUdp?.keepAliveInterval);
+    }
+
+    oldNetworking?.off('stateChange', networkStateChangeHandler);
+    newNetworking?.on('stateChange', networkStateChangeHandler);
+  });
   try {
     await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
     return connection;
@@ -58,9 +73,8 @@ async function Join(interaction) {
 }
 
 // interation handler
-client.on('interactionCreate', async interaction => {
+client.on(Events.InteractionCreate, async interaction => {
   if (!interaction.isCommand()) return;
-  
   const command = commands.indexOf(commands.find(x => x.name === interaction.commandName)); // finds the interaction command
   var fileReference = require(`./commands/${commandFiles[command]}`); // gets the needed information from the command file using the command variable above
   if (command < 0) return;
@@ -82,7 +96,6 @@ client.on('interactionCreate', async interaction => {
       interaction.reply({ embeds: [help.exampleEmbed] });
     }
     else {
-      console.log('an error occured!');
       return;
     }
   } catch (error) {
@@ -91,7 +104,17 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
+client.on(Events.InteractionCreate, interaction => {
+  if (!interaction.isButton()) return;
+  console.log(interaction);
+  audioHandler.mainPlayer(interaction, connection, interaction.customId, client);
+});
+
 // sends the commands array to discord so that the commands are actually registered for this application on discords servers
 (async () => { try { await rest.put(Routes.applicationCommands(clientId), { body: commands },);} catch (error) {console.error(error);}})();
 
 client.login(token);
+
+module.exports = {
+  client
+}

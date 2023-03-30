@@ -1,6 +1,6 @@
-const { MessageEmbed } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
-const exampleEmbed = new MessageEmbed()
+const exampleEmbed = new EmbedBuilder()
 		.setColor('#ffffff')
 		//.setTitle('Current bugs that will be fixed in a future update:')
 		.setDescription('There are currently no bugs! :)');
