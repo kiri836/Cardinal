@@ -17,7 +17,6 @@ const Events = require ('discord.js');
 const authorization = require("../Config.js");
 const betterytsr = require('./YoutubeAPIstuff/quickstart.js'); // this uses the youtube api directly instead of using the method ytsr is currently using, this speeds up the searching and makes it easier to modify for future use
 const COOKIE = authorization.cookies;
-const ID_TOKEN = authorization.idtoken;
 
 var playerObjList = []; 	// array that contains all playing objects
 var url; 					// the search term used to search for videos

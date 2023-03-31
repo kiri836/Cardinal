@@ -120,11 +120,12 @@ discordClient.client.on('messageCreate', (message) => {
   if (users.findIndex(x => x.userid === userId) != -1){
     index = users.findIndex(x => x.userid === userId);
     timeout = Date.now() - users[index].messageTimeout;
-    if (timeout >= 0){
-      assignMessagePoints(userId);
+    if (timeout >= 60){
+      assignMessagePoints(userId, 0);
       users[index].messageTimeout = Date.now();
       return;
     } else {
+      assignMessagePoints(userId, 1);
       return;
     }
   } else {
@@ -147,8 +148,14 @@ function messageCounter(userId){
   });
 }
 
-async function assignMessagePoints(userId){  
+async function assignMessagePoints(userId, set){  
   await exists(userId);
+  if (set === 1){
+    await messageCounter(userId);
+    messages++;
+    db.run(`UPDATE points SET messagesSent = ${messages} WHERE user_id = ${userId}`);
+    return;
+  }
   if (errors === null && rowOutput != undefined){
     await messageCounter(userId);
     messages++;
@@ -197,6 +204,7 @@ discordClient.client.on(Events.InteractionCreate, async interaction => {
 
   if (interaction.commandName == "leaderboard"){
     let user = new userMessages;
+    user.rank = [];
     user.userid = interaction.user.id;
     await exists(user.userid);
     if (errors === null && rowOutput === undefined){
