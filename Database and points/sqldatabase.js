@@ -94,13 +94,17 @@ function timeIn(userId){
 
 async function assignVoicePoints(userId, timeInVC){  
   await exists(userId);
+  let user = new userMessages;
+  user.userid = userId;
+  await dataOutput(user);
 
   if (errors === null && rowOutput != undefined){
     await timeIn(userId);
+    user.exp = user.exp + Math.round((timeInVC/60000) * 3);
     timeInVC = time + timeInVC;
-    db.run(`UPDATE points SET msInVoice = ${timeInVC} WHERE user_id = ${userId}`);
+    db.run(`UPDATE points SET msInVoice = ${timeInVC}, userExp = ${user.exp} WHERE user_id = ${userId}`);
   } else if (errors === null && rowOutput === undefined){
-    db.run(`INSERT INTO points (user_id, msInVoice, messagesSent, messagePoints, steamPoints, userLevel, userExp, lumen, totalExp) VALUES(${userId}, ${timeInVC}, 0, 0, 0, 1, 0, 0, 0)`);
+    db.run(`INSERT INTO points (user_id, msInVoice, messagesSent, messagePoints, steamPoints, userLevel, userExp, lumen, totalExp) VALUES(${userId}, ${timeInVC}, 0, 0, 0, 1, ${user.exp}, 0, 0)`);
   } else {
     console.log("A problem has occured.");
   }
@@ -120,7 +124,7 @@ discordClient.client.on('messageCreate', (message) => {
   if (users.findIndex(x => x.userid === userId) != -1){
     index = users.findIndex(x => x.userid === userId);
     timeout = Date.now() - users[index].messageTimeout;
-    if (timeout >= 60){
+    if (timeout >= 60000){
       assignMessagePoints(userId, 0);
       users[index].messageTimeout = Date.now();
       return;
@@ -130,7 +134,6 @@ discordClient.client.on('messageCreate', (message) => {
     }
   } else {
     users.push(new userMessages(userId, 0, 0, 0, 0, 0, 0, Date.now(), 0));
-    assignMessagePoints(userId);
   }
   
 })

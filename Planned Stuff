@@ -1,6 +1,5 @@
 Planned Features(to be completed by 2023):
 
-Text and Voice Chat Leveling
 Custom Profiles
 Game Achievement Tracking
 Server and Across Server Leaderboards
@@ -15,3 +14,6 @@ Features that would be nice but no guarantee on actually happening:
 Website: Nothing to host on though might have something later
 Voice Commands: difficult with the discord api possibly not allowing it
 Economy: A lot of commands a lot of time to do (considering there are a ton of economy bots, there is probably no point to this)
+
+Finished:
+Text and Voice Chat Leveling
