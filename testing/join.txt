@@ -1,0 +1,10 @@
+const { SlashCommandBuilder } = require('@discordjs/builders');
+
+var name = 'join';
+
+module.exports = {
+	data: new SlashCommandBuilder()
+		.setName('join')
+		.setDescription('Makes the bot join the voice chat'),
+	name
+};

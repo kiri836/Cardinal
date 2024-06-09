@@ -13,7 +13,7 @@
     "moment-duration-format": "^2.3.2",
     "sodium": "^3.0.2",
     "sqlite3": "^5.1.4",
-    "ytdl-core": "^4.11.2",
+    "ytdl-core": "^4.11.5",
     "ytsr": "^3.8.0"
   }
 }

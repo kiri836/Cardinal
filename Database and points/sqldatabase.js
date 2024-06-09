@@ -44,6 +44,7 @@ const db = new sql.Database('points.db', (err) => {
   }
 });
 
+//checks for users joining and leaving VCs
 discordClient.client.on('voiceStateUpdate', (oldState, newState) => {
   if (newState.member.user.bot){ return; }
   const oldChannel = oldState.channel;
@@ -70,6 +71,7 @@ discordClient.client.on('voiceStateUpdate', (oldState, newState) => {
   }
 });
 
+//checks if a user exists in the database
 function exists(userId){
   return new Promise(function(resolve) {
     db.get(`SELECT user_id FROM points WHERE user_id = ${userId}`, [], async (err, row) => { 
@@ -82,6 +84,7 @@ function exists(userId){
   });
 }
 
+//returs the total amount of time a user has spent in VCs
 function timeIn(userId){
   return new Promise(function(resolve) {
     db.get(`SELECT msInVoice FROM points WHERE user_id = ${userId}`, [], (err, row) => { 
@@ -92,9 +95,10 @@ function timeIn(userId){
   });
 }
 
+//updates the users VC point value
 async function assignVoicePoints(userId, timeInVC){  
   await exists(userId);
-  let user = new userMessages;
+  let user = new userStats;
   user.userid = userId;
   await dataOutput(user);
 
@@ -103,21 +107,14 @@ async function assignVoicePoints(userId, timeInVC){
     user.exp = user.exp + Math.round((timeInVC/60000) * 3);
     timeInVC = time + timeInVC;
     db.run(`UPDATE points SET msInVoice = ${timeInVC}, userExp = ${user.exp} WHERE user_id = ${userId}`);
-  } else if (errors === null && rowOutput === undefined){
+  } else if (errors != null && rowOutput === undefined){
     db.run(`INSERT INTO points (user_id, msInVoice, messagesSent, messagePoints, steamPoints, userLevel, userExp, lumen, totalExp) VALUES(${userId}, ${timeInVC}, 0, 0, 0, 1, ${user.exp}, 0, 0)`);
   } else {
     console.log("A problem has occured.");
   }
 }
 
-
-
-
-
-
-
-
-
+//checks for new messages from users
 discordClient.client.on('messageCreate', (message) => {
   if(message.author.bot) return;
   let userId = message.author.id;
@@ -133,7 +130,7 @@ discordClient.client.on('messageCreate', (message) => {
       return;
     }
   } else {
-    users.push(new userMessages(userId, 0, 0, 0, 0, 0, 0, Date.now(), 0));
+    users.push(new userStats(userId, 0, 0, 0, 0, 0, 0, Date.now(), 0));
   }
   
 })
@@ -184,7 +181,8 @@ function getRndInteger() {
 discordClient.client.on(Events.InteractionCreate, async interaction => {   
   if(interaction.user.bot) return;
   if (interaction.commandName == "rank"){
-    let user = new userMessages;
+    let user = new userStats
+ ;
     user.rank = [];
     user.userid = interaction.user.id;
     if (!(interaction.options._hoistedOptions == "")){
@@ -206,7 +204,8 @@ discordClient.client.on(Events.InteractionCreate, async interaction => {
   }
 
   if (interaction.commandName == "leaderboard"){
-    let user = new userMessages;
+    let user = new userStats
+ ;
     user.rank = [];
     user.userid = interaction.user.id;
     await exists(user.userid);
@@ -233,7 +232,8 @@ discordClient.client.on(Events.InteractionCreate, async interaction => {
       db.run(`INSERT INTO points (user_id, msInVoice, messagesSent, messagePoints, steamPoints, userLevel, userExp, lumen, totalExp) VALUES(${modifiedUser}, 0, 0, 0, 0, 1, 0, 0, 0)`);
       console.log("this");
     }
-    let user = new userMessages;
+    let user = new userStats
+ ;
       if ((interaction.options.getString('time') != undefined && interaction.options.getString('messages') != undefined) && (typeof interaction.options.getString('time') == typeof 50  && typeof interaction.options.getString('messages') == typeof 50)){
         db.run(`UPDATE points SET msInVoice = ${interaction.options.getString('time')}, messagePoints = ${interaction.options.getString('messages')} WHERE user_id = ${modifiedUser}`);
         await dataOutput(user);
@@ -253,6 +253,7 @@ discordClient.client.on(Events.InteractionCreate, async interaction => {
   }
 })
 
+//gets all the data about a given user and updates the provided variable with the data
 function dataOutput(user){
   return new Promise(function(resolve) {
     db.get(`SELECT msInVoice, messagesSent, messagePoints, userLevel, userExp, lumen, totalExp FROM points WHERE user_id = ${user.userid}`, [], async (err, row) => {
@@ -269,9 +270,6 @@ function dataOutput(user){
     });
   });
 }
-
-
-
 
 function updateEverything(user){
   user.totalExp = Math.round((user.msInVoice/60000) * 3) + user.messagepoints;
@@ -349,7 +347,8 @@ function getRanking(user){
 }
 
 
-class userMessages {
+//contains the all of the stats of a user
+class userStat {
   constructor(userid, msInVoice, messagecount, messagepoints, level, exp, totalExp, lumen, messageTimeout, expRequired, levelExpPercent, rank) {
     this.userid = userid;
     this.msInVoice = msInVoice;

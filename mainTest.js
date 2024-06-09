@@ -104,11 +104,31 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 });
 
-client.on(Events.InteractionCreate, interaction => {
-  if (!interaction.isButton()) return;
-  console.log(interaction);
-  audioHandler.mainPlayer(interaction, connection, interaction.customId, client);
+client.on('messageCreate', (message) => {
+  if(message.author.bot) return;
+  let userId = message.author.id;
+  if (users.findIndex(x => x.userid === userId) != -1){
+    index = users.findIndex(x => x.userid === userId);
+    timeout = Date.now() - users[index].messageTimeout;
+    if (timeout >= 60000){
+      assignMessagePoints(userId, 0);
+      users[index].messageTimeout = Date.now();
+      return;
+    } else {
+      assignMessagePoints(userId, 1);
+      return;
+    }
+  } else {
+    users.push(new userMessages(userId, 0, 0, 0, 0, 0, 0, Date.now(), 0));
+  }
+  
 });
+
+//client.on(Events.InteractionCreate, interaction => {
+//  if (!interaction.isButton()) return;
+//  console.log(interaction);
+//  audioHandler.mainPlayer(interaction, connection, interaction.customId, client);
+//});
 
 // sends the commands array to discord so that the commands are actually registered for this application on discords servers
 (async () => { try { await rest.put(Routes.applicationCommands(clientId), { body: commands },);} catch (error) {console.error(error);}})();
