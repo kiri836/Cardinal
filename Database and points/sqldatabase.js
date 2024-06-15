@@ -1,6 +1,5 @@
 const { Discord, Events } = require('discord.js');
 const sql = require("sqlite3");
-const discordClient = require('../mainTest.js');
 const voiceChannelJoinTime = new Map();
 const banner = require("./banners.js");
 const leaderboardEmbedd = require("./leaderboard.js");
@@ -45,7 +44,7 @@ const db = new sql.Database('points.db', (err) => {
 });
 
 //checks for users joining and leaving VCs
-discordClient.client.on('voiceStateUpdate', (oldState, newState) => {
+function userVoiceDataAssignment(oldState, newState){
   if (newState.member.user.bot){ return; }
   const oldChannel = oldState.channel;
   const newChannel = newState.channel;
@@ -69,7 +68,88 @@ discordClient.client.on('voiceStateUpdate', (oldState, newState) => {
       voiceChannelJoinTime.set(`${newChannel.id}-${userId}`, joinTime);
     }
   }
-});
+}
+
+//checks for new messages from users
+function userMessageDataAssignment(message){
+  if(message.author.bot){ return; }
+  let userId = message.author.id;
+  if (users.findIndex(x => x.userid === userId) != -1){
+    index = users.findIndex(x => x.userid === userId);
+    timeout = Date.now() - users[index].messageTimeout;
+    if (timeout >= 60000){
+      assignMessagePoints(userId, 0);
+      users[index].messageTimeout = Date.now();
+      return;
+    } else {
+      assignMessagePoints(userId, 1);
+      return;
+    }
+  } else {
+    users.push(new userStats(userId, 0, 0, 0, 0, 0, 0, Date.now(), 0));
+  }
+}
+
+//interaction handling for rank, leaderboard and set
+function userDataDisplayAssignment(interaction){
+  let user = new userStats;
+  user.rank = [];
+  user.userid = interaction.user.id;
+  await exists(user.userid);
+  if (errors === null && rowOutput === undefined){
+    db.run(`INSERT INTO points (user_id, msInVoice, messagesSent, messagePoints, steamPoints, userLevel, userExp, lumen, totalExp) VALUES(${user.userid}, 0, 0, 0, 0, 1, 0, 0, 0)`);
+  }
+  if (interaction.commandName ==="rank"){
+    if (!(interaction.options._hoistedOptions == "")){
+      if(interaction.options.getUser('user').bot) {return interaction.reply("You can't check the rank of a bot.")};
+      user.userid = interaction.options.getUser('user').id;
+    }
+
+    await dataOutput(user);
+    await updateEverything(user);
+
+    await getRanking(user);
+    let userbanner = await banner.imageCreation(user, interaction);
+    return interaction.reply({ files: [userbanner] });
+  }
+
+  if (interaction.commandName === "leaderboard"){
+    
+    await dataOutput(user);
+    let topLevels = [];
+    let topVoice = [];
+    let topText = [];
+
+    await getLeaderboard(topLevels, topVoice, topText);
+    interaction.reply({ embeds: [await leaderboardEmbedd.leaderBoardEmbedd(user, topLevels, topVoice, topText)] });
+  }
+
+  if (interaction.commandName === "set"){
+    let modifiedUser = interaction.options.getUser('user').id;
+   if (interaction.user.id == 242375862379347969){
+    await exists(modifiedUser);
+    if (errors === null && rowOutput === undefined){
+      db.run(`INSERT INTO points (user_id, msInVoice, messagesSent, messagePoints, steamPoints, userLevel, userExp, lumen, totalExp) VALUES(${modifiedUser}, 0, 0, 0, 0, 1, 0, 0, 0)`);
+      console.log("this");
+    }
+      if ((interaction.options.getString('time') != undefined && interaction.options.getString('messages') != undefined) && (typeof interaction.options.getString('time') == typeof 50  && typeof interaction.options.getString('messages') == typeof 50)){
+        db.run(`UPDATE points SET msInVoice = ${interaction.options.getString('time')}, messagePoints = ${interaction.options.getString('messages')} WHERE user_id = ${modifiedUser}`);
+        await dataOutput(user);
+        await updateEverything(user);
+      } else if (interaction.options.getString('time') != undefined && typeof interaction.options.getString('time') == typeof 50){
+        db.run(`UPDATE points SET msInVoice = ${parseInt(interaction.options.getString('time'))} WHERE user_id = ${modifiedUser}`);
+        await dataOutput(user);
+        await updateEverything(user);
+      } else if (interaction.options.getString('messages') != undefined && typeof interaction.options.getString('messages') == typeof 50){
+        db.run(`UPDATE points SET messagesSent = ${parseInt(interaction.options.getString('messages'))} WHERE user_id = ${modifiedUser}`);
+        await dataOutput(user);
+        await updateEverything(user);
+      }     
+   } else {
+    return interaction.reply("You do not have the permissions to use this command.");
+   }
+  }
+}
 
 //checks if a user exists in the database
 function exists(userId){
@@ -114,27 +194,6 @@ async function assignVoicePoints(userId, timeInVC){
   }
 }
 
-//checks for new messages from users
-discordClient.client.on('messageCreate', (message) => {
-  if(message.author.bot) return;
-  let userId = message.author.id;
-  if (users.findIndex(x => x.userid === userId) != -1){
-    index = users.findIndex(x => x.userid === userId);
-    timeout = Date.now() - users[index].messageTimeout;
-    if (timeout >= 60000){
-      assignMessagePoints(userId, 0);
-      users[index].messageTimeout = Date.now();
-      return;
-    } else {
-      assignMessagePoints(userId, 1);
-      return;
-    }
-  } else {
-    users.push(new userStats(userId, 0, 0, 0, 0, 0, 0, Date.now(), 0));
-  }
-  
-})
-
 function messageCounter(userId){
   return new Promise(function(resolve) {
     db.get(`SELECT messagesSent, messagePoints, userExp FROM points WHERE user_id = ${userId}`, [], async (err, row) => { 
@@ -178,81 +237,6 @@ function getRndInteger() {
   return Math.floor(Math.random() * (7 - 1) ) + 1;
 }
 
-discordClient.client.on(Events.InteractionCreate, async interaction => {   
-  if(interaction.user.bot) return;
-  if (interaction.commandName == "rank"){
-    let user = new userStats
- ;
-    user.rank = [];
-    user.userid = interaction.user.id;
-    if (!(interaction.options._hoistedOptions == "")){
-      if(interaction.options.getUser('user').bot) {return interaction.reply("You can't check the rank of a bot.")};
-      user.userid = interaction.options.getUser('user').id;
-    }
-
-    await exists(user.userid);
-    if (errors === null && rowOutput === undefined){
-      db.run(`INSERT INTO points (user_id, msInVoice, messagesSent, messagePoints, steamPoints, userLevel, userExp, lumen, totalExp) VALUES(${user.userid}, 0, 0, 0, 0, 1, 0, 0, 0)`);
-    }
-
-    await dataOutput(user);
-    await updateEverything(user);
-
-    await getRanking(user);
-    let userbanner = await banner.imageCreation(user, interaction);
-    return interaction.reply({ files: [userbanner] });
-  }
-
-  if (interaction.commandName == "leaderboard"){
-    let user = new userStats
- ;
-    user.rank = [];
-    user.userid = interaction.user.id;
-    await exists(user.userid);
-    if (errors === null && rowOutput === undefined){
-      db.run(`INSERT INTO points (user_id, msInVoice, messagesSent, messagePoints, steamPoints, userLevel, userExp, lumen, totalExp) VALUES(${user.userid}, 0, 0, 0, 0, 1, 0, 0, 0)`);
-    }
-    await dataOutput(user);
-    let topLevels = [];
-    let topVoice = [];
-    let topText = [];
-
-    await getLeaderboard(topLevels, topVoice, topText);
-    console.log(topLevels, topVoice, topText);
-    let embed = await leaderboardEmbedd.leaderBoardEmbedd(user, topLevels, topVoice, topText);
-    console.log(embed);
-    interaction.reply({ embeds: [embed] });
-  }
-
-  if (interaction.commandName == "set"){
-    let modifiedUser = interaction.options.getUser('user').id;
-   if (interaction.user.id == 242375862379347969){
-    await exists(modifiedUser);
-    if (errors === null && rowOutput === undefined){
-      db.run(`INSERT INTO points (user_id, msInVoice, messagesSent, messagePoints, steamPoints, userLevel, userExp, lumen, totalExp) VALUES(${modifiedUser}, 0, 0, 0, 0, 1, 0, 0, 0)`);
-      console.log("this");
-    }
-    let user = new userStats
- ;
-      if ((interaction.options.getString('time') != undefined && interaction.options.getString('messages') != undefined) && (typeof interaction.options.getString('time') == typeof 50  && typeof interaction.options.getString('messages') == typeof 50)){
-        db.run(`UPDATE points SET msInVoice = ${interaction.options.getString('time')}, messagePoints = ${interaction.options.getString('messages')} WHERE user_id = ${modifiedUser}`);
-        await dataOutput(user);
-        await updateEverything(user);
-      } else if (interaction.options.getString('time') != undefined && typeof interaction.options.getString('time') == typeof 50){
-        db.run(`UPDATE points SET msInVoice = ${parseInt(interaction.options.getString('time'))} WHERE user_id = ${modifiedUser}`);
-        await dataOutput(user);
-        await updateEverything(user);
-      } else if (interaction.options.getString('messages') != undefined && typeof interaction.options.getString('messages') == typeof 50){
-        db.run(`UPDATE points SET messagesSent = ${parseInt(interaction.options.getString('messages'))} WHERE user_id = ${modifiedUser}`);
-        await dataOutput(user);
-        await updateEverything(user);
-      }     
-   } else {
-    return interaction.reply("You do not have the permissions to use this command.");
-   }
-  }
-})
-
 //gets all the data about a given user and updates the provided variable with the data
 function dataOutput(user){
   return new Promise(function(resolve) {
@@ -283,7 +267,7 @@ function updateEverything(user){
     }
   db.run(`UPDATE points SET messagesSent = ${user.messagecount}, messagePoints = ${user.messagepoints}, userLevel = ${user.level}, userExp = ${user.exp}, totalExp = ${user.totalExp} WHERE user_id = ${user.userid}`);
 }
-
+//feels like unnecessary repetion here, should be shortened if possible
 function getLeaderboard(topLevels, topVoice, topText){
   return new Promise(function(resolve) {
     db.all(`SELECT user_id, userLevel FROM points ORDER BY userLevel DESC LIMIT 7`, [], async (err, row) => {
@@ -325,6 +309,7 @@ function getLeaderboard(topLevels, topVoice, topText){
 
 //SELECT COUNT(*) FROM (SELECT user_id, userLevel FROM points ORDER BY userLevel DESC) WHERE userLevel > (SELECT userLevel FROM points WHERE user_id = ${userid})
 
+//same problem here as above
 function getRanking(user){
   return new Promise(function(resolve) {
     db.get(`SELECT COUNT(*) FROM points WHERE totalExp > $exp`, { $exp: user.totalExp }, async (err, row) => {
@@ -366,5 +351,5 @@ class userStat {
 }
 
 module.exports = {
-  db
+  db, userDataDisplayAssignment, userMessageDataAssignment, userVoiceDataAssignment
 }

@@ -94,6 +94,9 @@ client.on(Events.InteractionCreate, async interaction => {
     } 
     else if (fileReference.name === 'help'){
       interaction.reply({ embeds: [help.exampleEmbed] });
+    } 
+    else if (fileReference.name === 'set' || fileReference.name === 'leaderboard' || fileReference.name === 'rank'){
+      database.userDataDisplayAssignment(interaction);
     }
     else {
       return;
@@ -105,24 +108,13 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.on('messageCreate', (message) => {
-  if(message.author.bot) return;
-  let userId = message.author.id;
-  if (users.findIndex(x => x.userid === userId) != -1){
-    index = users.findIndex(x => x.userid === userId);
-    timeout = Date.now() - users[index].messageTimeout;
-    if (timeout >= 60000){
-      assignMessagePoints(userId, 0);
-      users[index].messageTimeout = Date.now();
-      return;
-    } else {
-      assignMessagePoints(userId, 1);
-      return;
-    }
-  } else {
-    users.push(new userMessages(userId, 0, 0, 0, 0, 0, 0, Date.now(), 0));
-  }
-  
+  database.userMessageDataAssignment(message);
 });
+
+client.on('voiceStateUpdate', (oldState, newState) => {
+  database.userVoiceDataAssignment(oldState, newState);
+});
+
 
 //client.on(Events.InteractionCreate, interaction => {
 //  if (!interaction.isButton()) return;
