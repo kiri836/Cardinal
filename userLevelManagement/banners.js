@@ -32,7 +32,7 @@ async function imageCreation(user, interaction){
 		return ctx.font;
 	};
 
-	const background = await readFile('../userbanners/banner2.jpg');
+	const background = await readFile('../bot rewrite/userbanners/banner2.jpg');
 	const backgroundImage = new Image();
 	backgroundImage.src = background;
 	ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
@@ -59,9 +59,9 @@ async function imageCreation(user, interaction){
 	ctx.textBaseline = 'middle';
 	ctx.textAlign = "center";
 
-	ctx.font = await applyText(canvas, message.username + "#" + message.discriminator);
+	ctx.font = await applyText(canvas, message.username);
 	ctx.fillStyle = '#ffffff';
-	ctx.fillText(message.username + "#" + message.discriminator, 720, 310);
+	ctx.fillText(message.username, 720, 310);
 
 	ctx.font = "23px sans-serif";
 	ctx.fillText("Messages", 170, 300);

@@ -9,27 +9,18 @@ async function leaderBoardEmbedd(user, topLevels, topVoice, topText) {
 	  s = (s - secs) / 60;
 	  var mins = s % 60;
 	  var hrs = (s - mins) / 60;
+	  if (hrs == 0){
+	  	if (mins == 0){
+	  		return secs + ' s';
+	  	}
+	  	return mins + ' m ' + secs + ' s';
+	  }
 
-	  return hrs + ' hrs ' + mins + ' mins ' + secs + ' secs';
+	  return hrs + ' h ' + mins + ' m ' + secs + ' s';
 	}
-	console.log(topLevels, topVoice, topText);
 	exampleEmbed = new EmbedBuilder()
-			.setColor(0x0099FF)
+			.setColor('#ffffff')
 			.setTimestamp();
-	for (let i = 0; i < 7; i++){
-		if (!topLevels[i].user_id){
-			topLevels[i].user_id = "empty";
-			topLevels[i].userLevel = "0";
-		}
-		if (!topText[i].user_id){
-			topText[i].user_id = "empty";
-			topText[i].messagesSent = "0";
-		}
-		if (!topVoice[i].user_id){
-			topVoice[i].user_id = "empty";
-			topVoice[i].msInVoice = "0";
-		}
-	}
 
 	if (user.rank[0] > 7){
 		exampleEmbed.addFields(

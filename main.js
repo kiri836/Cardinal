@@ -5,7 +5,7 @@ const token = authorization.token;
 const fs = require('node:fs');
 const { Client, Events, GatewayIntentBits, Partials } = require('discord.js');
 const commands = [];
-const commandFiles = fs.readdirSync('../commands').filter(file => file.endsWith('.js'));
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 const clientId = authorization.clientID;
 const { NoSubscriberBehavior,
   StreamType,
@@ -16,9 +16,9 @@ const { NoSubscriberBehavior,
   VoiceConnectionStatus,
   joinVoiceChannel, } = require('@discordjs/voice');
 const audioHandler = require('./musiccommands.js');
-const help = require('./helpembed.js');
+const help = require('./embeds/helpembed.js');
 const bugs = require('./bugslist.js');
-const database = require('./Database and points/sqldatabase.js');
+const database = require('./userLevelManagement/levelsAndExp.js');
 // const guildId = "954904615357390939";
 
 const rest = new REST({ version: '9' }).setToken(token);
@@ -116,11 +116,11 @@ client.on('voiceStateUpdate', (oldState, newState) => {
 });
 
 
-//client.on(Events.InteractionCreate, interaction => {
-//  if (!interaction.isButton()) return;
-//  console.log(interaction);
-//  audioHandler.mainPlayer(interaction, connection, interaction.customId, client);
-//});
+client.on(Events.InteractionCreate, interaction => {
+  if (!interaction.isButton()) return;
+  console.log(interaction);
+  audioHandler.mainPlayer(interaction, connection, interaction.customId, client);
+});
 
 // sends the commands array to discord so that the commands are actually registered for this application on discords servers
 (async () => { try { await rest.put(Routes.applicationCommands(clientId), { body: commands },);} catch (error) {console.error(error);}})();

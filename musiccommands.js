@@ -9,7 +9,7 @@ const { NoSubscriberBehavior,
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const fs = require('fs');
 const ytdl = require('ytdl-core'); // used for validating the validity of a supplied url
-const mainEmbed = require('./videoEmbed.js'); // embeds are all located in this file
+const mainEmbed = require('./embeds/videoEmbed.js'); // embeds are all located in this file
 const buttons = require('./ui/buttons.js');
 const Events = require ('discord.js');
 

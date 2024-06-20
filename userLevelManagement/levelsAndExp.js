@@ -2,7 +2,8 @@ const { Discord, Events } = require('discord.js');
 const sql = require("sqlite3");
 const voiceChannelJoinTime = new Map();
 const banner = require("./banners.js");
-const leaderboardEmbedd = require("./leaderboard.js");
+const leaderboardEmbedd = require("../embeds/leaderboardEmbed.js");
+const fs = require('node:fs');
 var rowOutput;
 var errors;
 var decider;
@@ -23,7 +24,11 @@ while (i < 500){
   i++;
 }
 
-const db = new sql.Database('points.db', (err) => {
+if (!fs.existsSync('./userLevelManagement/points.db')){
+  setTimeout(addPlaceholders, 5000);
+
+}
+const db = new sql.Database('./userLevelManagement/points.db', (err) => {
   if (err) {
     // Log the error
     console.error(err.message);
@@ -43,8 +48,17 @@ const db = new sql.Database('points.db', (err) => {
   }
 });
 
+function addPlaceholders(){
+  i = 0;
+  while (i < 7){
+    let thing = new userStats;
+    thing.userid = 'placeholder' + i;
+    db.run(`INSERT INTO points (user_id, msInVoice, messagesSent, messagePoints, steamPoints, userLevel, userExp, lumen, totalExp) VALUES('${thing.userid}', 0, 0, 0, 0, 0, 0, 0, 0)`);
+    i++;
+  }
+}
 //checks for users joining and leaving VCs
-function userVoiceDataAssignment(oldState, newState){
+async function userVoiceDataAssignment(oldState, newState){
   if (newState.member.user.bot){ return; }
   const oldChannel = oldState.channel;
   const newChannel = newState.channel;
@@ -71,7 +85,7 @@ function userVoiceDataAssignment(oldState, newState){
 }
 
 //checks for new messages from users
-function userMessageDataAssignment(message){
+async function userMessageDataAssignment(message){
   if(message.author.bot){ return; }
   let userId = message.author.id;
   if (users.findIndex(x => x.userid === userId) != -1){
@@ -91,7 +105,7 @@ function userMessageDataAssignment(message){
 }
 
 //interaction handling for rank, leaderboard and set
-function userDataDisplayAssignment(interaction){
+async function userDataDisplayAssignment(interaction){
   let user = new userStats;
   user.rank = [];
   user.userid = interaction.user.id;
@@ -333,7 +347,7 @@ function getRanking(user){
 
 
 //contains the all of the stats of a user
-class userStat {
+class userStats {
   constructor(userid, msInVoice, messagecount, messagepoints, level, exp, totalExp, lumen, messageTimeout, expRequired, levelExpPercent, rank) {
     this.userid = userid;
     this.msInVoice = msInVoice;
