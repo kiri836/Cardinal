@@ -221,7 +221,6 @@ async function listenerSkipper(audioPlayerInfo, client){
 		}			
 	} else {
 		if (audioPlayerInfo.QUEUE.length != 0){
-			console.log("this");
 			audioPlayerInfo.PLAYER.play(await streamCreator(audioPlayerInfo.QUEUE[0].VIDEOID));
 			audioPlayerInfo.CURRENT = audioPlayerInfo.QUEUE[0];
 			audioPlayerInfo.QUEUE.shift();

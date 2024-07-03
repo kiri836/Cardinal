@@ -1,14 +1,13 @@
-Planned Features(to be completed by 2023):
+Planned Features:
 
 Custom Profiles
 Game Achievement Tracking
-Server and Across Server Leaderboards
+Guild Unique leaderboard
 More Music Functionality: links from other music websites such as spotify, pitch control, speed control, cross channel output and more
 Administrative Commands
 Reaction Roles
-Polls
 Server Statistics
-Report To Admin
+Reports and warnings.
 
 Features that would be nice but no guarantee on actually happening:
 
@@ -18,3 +17,4 @@ Economy: A lot of commands a lot of time to do (considering there are a ton of e
 
 Finished:
 Text and Voice Chat Leveling
+Global Leaderboard

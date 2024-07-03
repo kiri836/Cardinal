@@ -15,7 +15,7 @@ const { NoSubscriberBehavior,
   AudioPlayerStatus,
   VoiceConnectionStatus,
   joinVoiceChannel, } = require('@discordjs/voice');
-const audioHandler = require('./musiccommands.js');
+const audioHandler = require('./musicHandler.js');
 const help = require('./embeds/helpembed.js');
 const bugs = require('./bugslist.js');
 const database = require('./userLevelManagement/levelsAndExp.js');
@@ -74,32 +74,43 @@ async function Join(interaction) {
 
 // interation handler
 client.on(Events.InteractionCreate, async interaction => {
+  if (interaction.isButton()) {
+    audioHandler.mainPlayer(interaction, connection, interaction.customId, client);
+  }
   if (!interaction.isCommand()) return;
   const command = commands.indexOf(commands.find(x => x.name === interaction.commandName)); // finds the interaction command
   var fileReference = require(`./commands/${commandFiles[command]}`); // gets the needed information from the command file using the command variable above
   if (command < 0) return;
   try {
-    if (fileReference.name === 'play'){
-      Join(interaction);
-      audioHandler.mainPlayer(interaction, connection, fileReference.name, client); // handles all the audio logic with the parced variables
-    }
-    else if (fileReference.name === 'pause' || fileReference.name === 'queue' || fileReference.name === 'resume' || fileReference.name === 'skip' || fileReference.name === 'loop' || fileReference.name === 'stop' || fileReference.name === 'leave' || fileReference.name === 'shuffle') {
-      audioHandler.mainPlayer(interaction, connection, fileReference.name, client);
-    }
-    else if (fileReference.name === 'bugs'){
-      interaction.reply({ embeds: [bugs.exampleEmbed] });
-    } 
-    else if (fileReference.name === 'support') {
-      interaction.reply('https://www.patreon.com/Kiri836');
-    } 
-    else if (fileReference.name === 'help'){
-      interaction.reply({ embeds: [help.exampleEmbed] });
-    } 
-    else if (fileReference.name === 'set' || fileReference.name === 'leaderboard' || fileReference.name === 'rank'){
-      database.userDataDisplayAssignment(interaction);
-    }
-    else {
-      return;
+    switch(fileReference.name){
+      case "play":
+        Join(interaction);
+      case "pause":
+      case "queue":
+      case "resume":
+      case "skip":
+      case "loop":
+      case "stop":
+      case "leave":
+      case "shuffle":
+        audioHandler.mainPlayer(interaction, connection, fileReference.name, client);
+        break;
+      case "bugs":
+        interaction.reply({ embeds: [bugs.exampleEmbed] });
+        break;
+      case "support":
+        interaction.reply('https://www.patreon.com/Kiri836');
+        break;
+      case "help":
+        interaction.reply({ embeds: [help.exampleEmbed] });
+        break;
+      case "set":
+      case "leaderboard":
+      case "rank":
+        database.userDataDisplayAssignment(interaction);
+        break;
+      default:
+        return;
     }
   } catch (error) {
       console.error(error);
@@ -113,13 +124,6 @@ client.on('messageCreate', (message) => {
 
 client.on('voiceStateUpdate', (oldState, newState) => {
   database.userVoiceDataAssignment(oldState, newState);
-});
-
-
-client.on(Events.InteractionCreate, interaction => {
-  if (!interaction.isButton()) return;
-  console.log(interaction);
-  audioHandler.mainPlayer(interaction, connection, interaction.customId, client);
 });
 
 // sends the commands array to discord so that the commands are actually registered for this application on discords servers
