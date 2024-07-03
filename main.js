@@ -7,19 +7,12 @@ const { Client, Events, GatewayIntentBits, Partials } = require('discord.js');
 const commands = [];
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
 const clientId = authorization.clientID;
-const { NoSubscriberBehavior,
-  StreamType,
-  createAudioPlayer,
-  createAudioResource,
-  entersState,
-  AudioPlayerStatus,
-  VoiceConnectionStatus,
-  joinVoiceChannel, } = require('@discordjs/voice');
+const { NoSubscriberBehavior, StreamType, createAudioPlayer, createAudioResource, entersState, AudioPlayerStatus, VoiceConnectionStatus, joinVoiceChannel, } = require('@discordjs/voice');
 const audioHandler = require('./musicHandler.js');
 const help = require('./embeds/helpembed.js');
 const bugs = require('./bugslist.js');
 const database = require('./userLevelManagement/levelsAndExp.js');
-// const guildId = "954904615357390939";
+const warningHandler = include('./warningManagement/warningHandler');
 
 const rest = new REST({ version: '9' }).setToken(token);
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessages], partials: [Partials.Channel] });
@@ -108,6 +101,15 @@ client.on(Events.InteractionCreate, async interaction => {
       case "leaderboard":
       case "rank":
         database.userDataDisplayAssignment(interaction);
+        break;
+      case "warn":
+        warningHandler.warn(interaction);
+        break;
+      case "warnings":
+        warningHandler.warnings(interaction);
+        break;
+      case "removewarning":
+        warningHandler.removeWarning(interaction);
         break;
       default:
         return;
