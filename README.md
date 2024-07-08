@@ -14,9 +14,9 @@
 ![](https://github.com/kiri836/Cardinal/blob/main/gifsForReadMe/Ranks.gif)
 
 ### Upcoming features:
-- Warnings - Warn your friends for note behaving.
-- Reports - Report your friends to your local administator.
-- Reaction Roles - Get a role just by clicking reaction.
+- Warnings - Warn your friends for not behaving.
+- Reports - Report your friends to your friendly local administator.
+- Reaction Roles - Get a role for clicking a reaction.
 - Voice Commands - Do stuff with the bot using just your voice!
 
 ## All commands:
